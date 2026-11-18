@@ -1,4 +1,5 @@
- @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 * {
     margin: 0;
@@ -6,6 +7,7 @@
     box-sizing: border-box;
 }
 
+/* FUNDO E CABEÇALHO */
 header {
     background-image: url('./WhatsApp Image 2026-11-16 at 15.34.46.jpeg');
     background-size: cover;
@@ -13,46 +15,39 @@ header {
     background-repeat: no-repeat;
     min-height: 100vh;
     padding: 2rem 1rem;
-}
-
-/* Ajustes para celulares */
-@media (max-width: 600px) {
-    header {
-        background-attachment: scroll;
-        background-position: center;
-        background-size: cover;
-        min-height: 100svh;
-        padding: 2rem 1rem;
-    }
-
-    header h3 {
-        font-size: 16px;
-    }
-
-    header h2 {
-        font-size: 20px;
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
 h1 {
     width: fit-content;
-    max-width: 85%;
+    max-width: 95%;
     color: rgb(181, 11, 11);
     padding: 0.5rem 1rem;
     border: 2px solid #560000;
-    outline: none;
     border-radius: 30px;
     background-color: rgb(0, 0, 0);
     margin: 20px auto;
     text-align: center;
+    font-family: 'Bungee', sans-serif;
     font-size: clamp(25px, 4vw, 40px);
 }
 
 header h2 {
     text-align: center;
+    font-family: 'Playfair Display', serif;
 }
 
-main{
+header h3 {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+}
+
+/* CONTEÚDO PRINCIPAL */
+main {
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -65,6 +60,12 @@ main{
     margin: 0 auto;
 }
 
+.filme h2 {
+    padding: 0.5rem;
+    text-align: left;
+    font-family: 'Bungee', sans-serif;
+}
+
 .conteudo {
     display: flex;
     align-items: flex-start;
@@ -73,12 +74,15 @@ main{
 
 .conteudo img {
     width: 250px;
+    max-width: 100%;
     height: auto;
     border-radius: 5px;
 }
 
 .sinopse {
     flex: 1;
+    min-width: 0;
+    font-family: 'Playfair Display', serif;
 }
 
 .sinopse p {
@@ -88,7 +92,7 @@ main{
 
 .genero {
     font-weight: bold;
-    text-align: left !important;
+    text-align: left;
 }
 
 .plataforma {
@@ -102,16 +106,54 @@ main{
     display: block;
 }
 
+/* CELULARES */
 @media (max-width: 600px) {
+
+    header {
+        background-attachment: scroll;
+        background-position: center;
+        background-size: cover;
+        min-height: 100svh;
+        padding: 2rem 1rem;
+    }
+
+    header h1 {
+        font-size: 26px;
+    }
+
+    header h2 {
+        font-size: 20px;
+    }
+
+    header h3 {
+        font-size: 15px;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    .filme {
+        width: 100%;
+    }
+
+    .filme h2 {
+        font-size: 20px;
+        text-align: center;
+    }
+
     .conteudo {
         flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .conteudo img {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .sinopse {
+        width: 100%;
     }
 }
-
-h2{
-    padding: 0.5rem;
-    outline: none;
-    margin: 0 auto;
-    text-align: left;
-}
-

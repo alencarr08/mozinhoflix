@@ -76,288 +76,209 @@
         const TMDB_API_KEY = "12b98db281f885582d19d37942c5f3ed";
 
         const supabase = window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+let generosTMDB = {};
+
+// ELEMENTOS DA PÁGINA
+const campoBusca = document.getElementById("campoBusca");
+const resultadosBusca = document.getElementById("resultadosBusca");
+const mensagemBusca = document.getElementById("mensagemBusca");
+const listaFilmes = document.getElementById("listaFilmes");
+
+// PROTEGER TEXTOS EXIBIDOS NA PÁGINA
+function escapar(texto) {
+    return String(texto ?? "").replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[caractere]);
+}
+
+// CARREGAR GÊNEROS
+async function carregarGeneros() {
+    const resposta = await fetch(
+        `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API_KEY}&language=pt-BR`
+    );
+
+    const dados = await resposta.json();
+
+    dados.genres.forEach(genero => {
+        generosTMDB[genero.id] = genero.name;
+    });
+}
+
+// PESQUISAR FILMES
+async function pesquisarFilmes() {
+    const pesquisa = campoBusca.value.trim();
+
+    if (!pesquisa) {
+        mensagemBusca.textContent = "Digite o nome de um filme.";
+        return;
+    }
+
+    resultadosBusca.innerHTML = "";
+    mensagemBusca.textContent = "Procurando filmes...";
+
+    try {
+        const resposta = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(pesquisa)}&include_adult=false`
         );
 
-        let sessao = null;
-        let generosTMDB = {};
+        if (!resposta.ok) throw new Error("Erro na pesquisa.");
 
-        // ELEMENTOS DA PÁGINA
-        const loginForm = document.getElementById("loginForm");
-        const usuarioLogado = document.getElementById("usuarioLogado");
-        const mensagemLogin = document.getElementById("mensagemLogin");
-        const campoBusca = document.getElementById("campoBusca");
-        const resultadosBusca = document.getElementById("resultadosBusca");
-        const mensagemBusca = document.getElementById("mensagemBusca");
-        const listaFilmes = document.getElementById("listaFilmes");
+        const dados = await resposta.json();
 
-        // EVITAR INSERIR TEXTO HTML INDESEJADO
-        function escapar(texto) {
-            return String(texto ?? "").replace(/[&<>"']/g, caractere => ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#039;"
-            })[caractere]);
-        }
+        mensagemBusca.textContent = dados.results.length
+            ? "Escolha o filme que deseja adicionar:"
+            : "Nenhum filme encontrado.";
 
-        // CARREGAR GÊNEROS DO TMDB
-        async function carregarGeneros() {
-            try {
-                const resposta = await fetch(
-                    `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API_KEY}&language=pt-BR`
-                );
+        dados.results.slice(0, 10).forEach(filme => {
+            const generos = (filme.genre_ids || [])
+                .map(id => generosTMDB[id])
+                .filter(Boolean)
+                .join(", ");
 
-                const dados = await resposta.json();
+            const poster = filme.poster_path
+                ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                : "";
 
-                dados.genres.forEach(genero => {
-                    generosTMDB[genero.id] = genero.name;
-                });
-            } catch (erro) {
-                console.error("Erro ao carregar gêneros:", erro);
-            }
-        }
-
-        // LOGIN DO ADMINISTRADOR
-        loginForm.addEventListener("submit", async (evento) => {
-            evento.preventDefault();
-
-            mensagemLogin.textContent = "Entrando...";
-
-            const email = document.getElementById("email").value;
-            const senha = document.getElementById("senha").value;
-
-            const { error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: senha
-            });
-
-            if (error) {
-                mensagemLogin.textContent = "Não foi possível entrar. Confira e-mail e senha.";
-            } else {
-                mensagemLogin.textContent = "Login realizado!";
-            }
-        });
-
-        // SAIR DA CONTA
-        document.getElementById("logoutBtn").addEventListener("click", async () => {
-            await supabase.auth.signOut();
-        });
-
-        // ATUALIZAR INTERFACE DE LOGIN
-        function atualizarLogin() {
-            loginForm.hidden = !!sessao;
-            usuarioLogado.hidden = !sessao;
-        }
-
-        // IDENTIFICAR SE HÁ USUÁRIO CONECTADO
-        supabase.auth.onAuthStateChange((_evento, novaSessao) => {
-            sessao = novaSessao;
-            atualizarLogin();
-        });
-
-        // PESQUISAR FILMES NO TMDB
-        async function pesquisarFilmes() {
-            const pesquisa = campoBusca.value.trim();
-
-            if (!pesquisa) {
-                mensagemBusca.textContent = "Digite o nome de um filme.";
-                return;
-            }
-
-            resultadosBusca.innerHTML = "";
-            mensagemBusca.textContent = "Procurando filmes...";
-
-            try {
-                const resposta = await fetch(
-                    `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(pesquisa)}&include_adult=false`
-                );
-
-                if (!resposta.ok) {
-                    throw new Error("Erro na pesquisa do TMDB.");
-                }
-
-                const dados = await resposta.json();
-
-                mensagemBusca.textContent = dados.results.length
-                    ? "Selecione o filme que deseja adicionar:"
-                    : "Nenhum filme encontrado.";
-
-                dados.results.slice(0, 10).forEach(filme => {
-                    const generos = (filme.genre_ids || [])
-                        .map(id => generosTMDB[id])
-                        .filter(Boolean)
-                        .join(", ");
-
-                    const poster = filme.poster_path
-                        ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
-                        : "";
-
-                    resultadosBusca.innerHTML += `
-                        <div class="resultado-filme">
-                            ${poster ? `<img src="${poster}" alt="${escapar(filme.title)}">` : ""}
-                            <div>
-                                <h3>${escapar(filme.title)}</h3>
-                                <p>${escapar(filme.overview || "Sinopse indisponível.")}</p>
-                                <p><strong>Lançamento:</strong> ${escapar(filme.release_date || "Não informado")}</p>
-                                <p><strong>Gêneros:</strong> ${escapar(generos || "Não informado")}</p>
-                                <button class="adicionarBtn" data-id="${filme.id}">
-                                    Adicionar ao MOZINHOFLIX
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-            } catch (erro) {
-                mensagemBusca.textContent = "Erro na pesquisa. Confira a configuração da API.";
-                console.error(erro);
-            }
-        }
-
-        document.getElementById("buscarBtn").addEventListener("click", pesquisarFilmes);
-
-        campoBusca.addEventListener("keydown", evento => {
-            if (evento.key === "Enter") {
-                pesquisarFilmes();
-            }
-        });
-
-        // ADICIONAR FILME AO SUPABASE
-        resultadosBusca.addEventListener("click", async evento => {
-            const botao = evento.target.closest(".adicionarBtn");
-
-            if (!botao) return;
-
-            if (!sessao) {
-                mensagemBusca.textContent = "Entre como administrador para adicionar filmes.";
-                return;
-            }
-
-            const idFilme = Number(botao.dataset.id);
-            botao.disabled = true;
-            botao.textContent = "Adicionando...";
-
-            try {
-                const resposta = await fetch(
-                    `https://api.themoviedb.org/3/movie/${idFilme}?api_key=${TMDB_API_KEY}&language=pt-BR`
-                );
-
-                if (!resposta.ok) throw new Error("Não foi possível obter os dados do filme.");
-
-                const filme = await resposta.json();
-
-                const nomesGeneros = (filme.genres || []).map(genero => genero.name);
-
-                const { error } = await supabase
-                    .from("filmes")
-                    .insert({
-                        tmdb_id: filme.id,
-                        titulo: filme.title,
-                        sinopse: filme.overview,
-                        poster_path: filme.poster_path,
-                        data_lancamento: filme.release_date || null,
-                        generos: nomesGeneros,
-                        adicionado_por: sessao.user.id
-                    });
-
-                if (error) {
-                    if (error.code === "23505") {
-                        mensagemBusca.textContent = "Esse filme já está no nosso catálogo!";
-                    } else {
-                        throw error;
-                    }
-                } else {
-                    mensagemBusca.textContent = "Filme adicionado com sucesso! ❤️";
-                    carregarFilmes();
-                }
-
-            } catch (erro) {
-                console.error(erro);
-                mensagemBusca.textContent = "Não foi possível adicionar o filme. Confira o login e as permissões.";
-            }
-
-            botao.disabled = false;
-            botao.textContent = "Adicionar ao MOZINHOFLIX";
-        });
-
-        // CARREGAR FILMES DO BANCO DE DADOS
-        async function carregarFilmes() {
-            listaFilmes.textContent = "Carregando filmes...";
-
-            const { data, error } = await supabase
-                .from("filmes")
-                .select("*")
-                .order("criado_em", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                listaFilmes.textContent = "Não foi possível carregar os filmes.";
-                return;
-            }
-
-            if (!data.length) {
-                listaFilmes.textContent = "Nosso catálogo ainda está vazio. Vamos adicionar alguns filmes! ❤️";
-                return;
-            }
-
-            listaFilmes.innerHTML = "";
-
-            data.forEach(filme => {
-                const poster = filme.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
-                    : "";
-
-                listaFilmes.innerHTML += `
-                    <div class="filme-catalogo">
-                        ${poster ? `<img src="${poster}" alt="${escapar(filme.titulo)}">` : ""}
-                        <div class="informacoes-filme">
-                            <h3>${escapar(filme.titulo)}</h3>
-                            <p>${escapar(filme.sinopse || "Sinopse indisponível.")}</p>
-                            <p class="genero">${escapar((filme.generos || []).join(", "))}</p>
-                            <p><strong>Lançamento:</strong> ${escapar(filme.data_lancamento || "Não informado")}</p>
-                            ${sessao ? `<button class="excluirBtn" data-id="${filme.id}">Excluir filme</button>` : ""}
-                        </div>
+            resultadosBusca.innerHTML += `
+                <div class="resultado-filme">
+                    ${poster ? `<img src="${poster}" alt="${escapar(filme.title)}">` : ""}
+                    <div>
+                        <h3>${escapar(filme.title)}</h3>
+                        <p>${escapar(filme.overview || "Sinopse indisponível.")}</p>
+                        <p><strong>Lançamento:</strong> ${escapar(filme.release_date || "Não informado")}</p>
+                        <p><strong>Gêneros:</strong> ${escapar(generos || "Não informado")}</p>
+                        <button class="adicionarBtn" data-id="${filme.id}">
+                            Adicionar ao MOZINHOFLIX
+                        </button>
                     </div>
-                `;
-            });
-        }
-
-        // EXCLUIR FILME DO CATÁLOGO
-        listaFilmes.addEventListener("click", async evento => {
-            const botao = evento.target.closest(".excluirBtn");
-
-            if (!botao || !sessao) return;
-
-            if (!confirm("Deseja realmente excluir este filme do catálogo?")) return;
-
-            const { error } = await supabase
-                .from("filmes")
-                .delete()
-                .eq("id", botao.dataset.id);
-
-            if (error) {
-                alert("Não foi possível excluir o filme.");
-                console.error(error);
-            } else {
-                carregarFilmes();
-            }
+                </div>
+            `;
         });
 
-        // INICIAR SITE
-        async function iniciarSite() {
-            await carregarGeneros();
+    } catch (erro) {
+        console.error(erro);
+        mensagemBusca.textContent = "Erro ao pesquisar filmes. Confira a API.";
+    }
+}
 
-            const { data } = await supabase.auth.getSession();
-            sessao = data.session;
-            atualizarLogin();
+document.getElementById("buscarBtn").addEventListener("click", pesquisarFilmes);
 
+campoBusca.addEventListener("keydown", evento => {
+    if (evento.key === "Enter") pesquisarFilmes();
+});
+
+// ADICIONAR FILME AO SUPABASE
+resultadosBusca.addEventListener("click", async evento => {
+    const botao = evento.target.closest(".adicionarBtn");
+
+    if (!botao) return;
+
+    const idFilme = Number(botao.dataset.id);
+
+    botao.disabled = true;
+    botao.textContent = "Adicionando...";
+
+    try {
+        const resposta = await fetch(
+            `https://api.themoviedb.org/3/movie/${idFilme}?api_key=${TMDB_API_KEY}&language=pt-BR`
+        );
+
+        if (!resposta.ok) throw new Error("Erro ao buscar detalhes do filme.");
+
+        const filme = await resposta.json();
+
+        const { error } = await supabase
+            .from("filmes")
+            .insert({
+                tmdb_id: filme.id,
+                titulo: filme.title,
+                sinopse: filme.overview,
+                poster_path: filme.poster_path,
+                data_lancamento: filme.release_date || null,
+                generos: (filme.genres || []).map(genero => genero.name)
+            });
+
+        if (error) {
+            if (error.code === "23505") {
+                mensagemBusca.textContent = "Esse filme já está no nosso catálogo! ❤️";
+            } else {
+                throw error;
+            }
+        } else {
+            mensagemBusca.textContent = "Filme adicionado com sucesso! ❤️";
             await carregarFilmes();
         }
 
-        iniciarSite();
+    } catch (erro) {
+        console.error(erro);
+        mensagemBusca.textContent = "Não foi possível adicionar o filme.";
+    }
+
+    botao.disabled = false;
+    botao.textContent = "Adicionar ao MOZINHOFLIX";
+});
+
+// CARREGAR CATÁLOGO COMPARTILHADO
+async function carregarFilmes() {
+    listaFilmes.textContent = "Carregando filmes...";
+
+    const { data, error } = await supabase
+        .from("filmes")
+        .select("*")
+        .order("criado_em", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        listaFilmes.textContent = "Não foi possível carregar os filmes.";
+        return;
+    }
+
+    if (!data.length) {
+        listaFilmes.textContent = "Nosso catálogo ainda está vazio. ❤️";
+        return;
+    }
+
+    listaFilmes.innerHTML = "";
+
+    data.forEach(filme => {
+        const poster = filme.poster_path
+            ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+            : "";
+
+        listaFilmes.innerHTML += `
+            <div class="filme-catalogo">
+                ${poster ? `<img src="${poster}" alt="${escapar(filme.titulo)}">` : ""}
+                <div class="informacoes-filme">
+                    <h3>${escapar(filme.titulo)}</h3>
+                    <p>${escapar(filme.sinopse || "Sinopse indisponível.")}</p>
+                    <p class="genero">${escapar((filme.generos || []).join(", "))}</p>
+                    <p><strong>Lançamento:</strong> ${escapar(filme.data_lancamento || "Não informado")}</p>
+                </div>
+            </div>
+        `;
+    });
+}
+
+// INICIAR SITE
+async function iniciarSite() {
+    try {
+        await carregarGeneros();
+        await carregarFilmes();
+    } catch (erro) {
+        console.error(erro);
+        mensagemBusca.textContent = "Erro ao iniciar o site.";
+    }
+}
+
+iniciarSite();
     </script>
 
 </body>

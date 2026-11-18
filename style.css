@@ -36,7 +36,6 @@ h1 {
     background-color: black;
     align-self: center;
     margin-top: -60px;
-    margin: -10px auto 20px;
     text-align: center;
     font-family: 'Bungee', sans-serif;
     font-size: clamp(25px, 4vw, 40px);

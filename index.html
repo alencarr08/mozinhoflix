@@ -114,11 +114,77 @@ async function pesquisarFilmes() {
             ? "Escolha o filme que deseja adicionar:"
             : "Nenhum filme encontrado.";
 
-        dados.results.slice(0, 10).forEach(filme => {
-            const generos = (filme.genre_ids || [])
-                .map(id => generosTMDB[id])
-                .filter(Boolean)
-                .join(", ");
+        
+for (const filme of dados.results.slice(0, 10)) {
+    const generos = (filme.genre_ids || [])
+        .map(id => generosTMDB[id])
+        .filter(Boolean)
+        .join(", ");
+
+    const poster = filme.poster_path
+        ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+        : "";
+
+    // BUSCAR PLATAFORMAS NO BRASIL
+    let plataformas = [];
+
+    try {
+        const respostaPlataformas = await fetch(
+            `https://api.themoviedb.org/3/movie/${filme.id}/watch/providers?api_key=${TMDB_API_KEY}`
+        );
+
+        if (respostaPlataformas.ok) {
+            const dadosPlataformas = await respostaPlataformas.json();
+            const brasil = dadosPlataformas.results?.BR;
+
+            if (brasil) {
+                const provedores = [
+                    ...(brasil.flatrate || []),
+                    ...(brasil.free || []),
+                    ...(brasil.ads || []),
+                    ...(brasil.rent || []),
+                    ...(brasil.buy || [])
+                ];
+
+                plataformas = [
+                    ...new Set(provedores.map(p => p.provider_name))
+                ];
+            }
+        }
+    } catch (erro) {
+        console.error("Erro ao buscar plataformas:", erro);
+    }
+
+    const textoPlataformas = plataformas.length
+        ? plataformas.join(", ")
+        : "Disponibilidade não informada no Brasil.";
+
+    resultadosBusca.innerHTML += `
+        <div class="resultado-filme">
+            ${poster ? `<img src="${poster}" alt="${escapar(filme.title)}">` : ""}
+
+            <div>
+                <h3>${escapar(filme.title)}</h3>
+
+                <p>${escapar(filme.overview || "Sinopse indisponível.")}</p>
+
+                <p><strong>Lançamento:</strong>
+                ${escapar(filme.release_date || "Não informado")}</p>
+
+                <p><strong>Gêneros:</strong>
+                ${escapar(generos || "Não informado")}</p>
+
+                <p><strong>Onde assistir:</strong>
+                ${escapar(textoPlataformas)}</p>
+
+                <button class="adicionarBtn" data-id="${filme.id}">
+                    Adicionar ao MOZINHOFLIX
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 
             const poster = filme.poster_path
                 ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`

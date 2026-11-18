@@ -1,52 +1,382 @@
- <!doctype HTML>
-   
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="style.css">
-        <title>MOZINHOFLIX</title>
-    </head>
 
-    <body> 
-        <header>
-            <h1>MOZINHOFLIX</h1><br>
-            <h2>FILMES PARA NÓS ASSISTIRMOS JUNTINHAS EM CASA OU NO CINEMA</h2><br>
-            <h3>Sujeito a briga se assistir alguma dessas opções sozinha ou com outra pessoa que não seja o seu amor!</h3><br><br><br>
-            <h3>Jajá teremos a versão com busca automática :)</h3>
-        </header>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>MOZINHOFLIX</title>
+</head>
 
-        <main>
-            <!--O Mundo depois de nós-->
-            <section class="filme">
-                <h2>O MUNDO DEPOIS DE NÓS</h2><br>
+<body>
 
-                <div class="conteudo">
-                    <img src="omundodpsdenos.png" alt="O Mundo Depois de Nós">
+    <header>
+        <h1>MOZINHOFLIX</h1>
+        <h2>FILMES PARA NÓS ASSISTIRMOS JUNTINHAS EM CASA OU NO CINEMA</h2>
+        <h3>Sujeito a briga se assistir alguma dessas opções sozinha ou com outra pessoa que não seja o seu amor!</h3>
+    </header>
 
-                    <div class="sinopse">
-                        <p> Amanda e Clay alugam uma casa de luxo para passar alguns dias tranquilos longe da cidade grande com seus filhos. Mas uma catástrofe misteriosa vira o país de ponta-cabeça. G.H. e Ruth batem à sua porta afirmando que são os donos originais da mansão e pedem abrigo no lugar. Desconfiados e em meio ao caos do mundo, os estranhos são obrigados a morar juntos, mas não conseguem confiar uns nos outros.
-                        </p><br>
+    <main>
 
-                        <p class="genero">
-                            Suspense, Ficção científica
-                        </p>
+        <!-- LOGIN DO ADMINISTRADOR -->
+        <section class="administracao">
+            <h2>ÁREA DO ADMINISTRADOR</h2>
 
-                        <div class="plataforma">
-                            <img src="netflix.png" alt="Netflix">
-                        </div>
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="E-mail do administrador" required>
+                <input type="password" id="senha" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+
+            <div id="usuarioLogado" hidden>
+                <p>Administrador conectado!</p>
+                <button id="logoutBtn">Sair</button>
+            </div>
+
+            <p id="mensagemLogin"></p>
+        </section>
+
+        <!-- PESQUISA DE FILMES -->
+        <section class="pesquisa">
+            <h2>ENCONTRE UM FILME</h2>
+
+            <div class="barra-pesquisa">
+                <input type="text" id="campoBusca" placeholder="Digite o nome do filme...">
+                <button id="buscarBtn">Pesquisar</button>
+            </div>
+
+            <div id="resultadosBusca"></div>
+            <p id="mensagemBusca"></p>
+        </section>
+
+        <!-- CATÁLOGO COMPARTILHADO -->
+        <section class="catalogo">
+            <h2>NOSSA LISTA DE FILMES</h2>
+            <div id="listaFilmes">
+                Carregando filmes...
+            </div>
+        </section>
+
+        <!-- FILME QUE JÁ EXISTIA NO SITE -->
+        <section class="filme">
+            <h2>O MUNDO DEPOIS DE NÓS</h2>
+
+            <div class="conteudo">
+                <img src="omundodpsdenos.png" alt="O Mundo Depois de Nós">
+
+                <div class="sinopse">
+                    <p>
+                        Amanda e Clay alugam uma casa de luxo para passar alguns dias tranquilos longe da cidade grande com seus filhos. Mas uma catástrofe misteriosa vira o país de ponta-cabeça. G.H. e Ruth batem à sua porta afirmando que são os donos originais da mansão e pedem abrigo no lugar. Desconfiados e em meio ao caos do mundo, os estranhos são obrigados a morar juntos, mas não conseguem confiar uns nos outros.
+                    </p>
+
+                    <p class="genero">
+                        Suspense, Ficção científica
+                    </p>
+
+                    <div class="plataforma">
+                        <img src="netflix.png" alt="Netflix">
                     </div>
                 </div>
+            </div>
+        </section>
 
-                
-                
-            </section>
+    </main>
 
-        </main>
-        
-        <footer>
-        </footer>
+    <footer></footer>
 
-    </body>
+    <!-- BIBLIOTECA DO SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <script>
+        // CONFIGURAÇÕES
+        const SUPABASE_URL = "https://xaeeqggwfbftedrppyfj.supabase.co";
+        const SUPABASE_PUBLISHABLE_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
+        const TMDB_API_KEY = "COLE_SUA_API_KEY_V3_AQUI";
+
+        const supabase = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+        let sessao = null;
+        let generosTMDB = {};
+
+        // ELEMENTOS DA PÁGINA
+        const loginForm = document.getElementById("loginForm");
+        const usuarioLogado = document.getElementById("usuarioLogado");
+        const mensagemLogin = document.getElementById("mensagemLogin");
+        const campoBusca = document.getElementById("campoBusca");
+        const resultadosBusca = document.getElementById("resultadosBusca");
+        const mensagemBusca = document.getElementById("mensagemBusca");
+        const listaFilmes = document.getElementById("listaFilmes");
+
+        // EVITAR INSERIR TEXTO HTML INDESEJADO
+        function escapar(texto) {
+            return String(texto ?? "").replace(/[&<>"']/g, caractere => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            })[caractere]);
+        }
+
+        // CARREGAR GÊNEROS DO TMDB
+        async function carregarGeneros() {
+            try {
+                const resposta = await fetch(
+                    `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API_KEY}&language=pt-BR`
+                );
+
+                const dados = await resposta.json();
+
+                dados.genres.forEach(genero => {
+                    generosTMDB[genero.id] = genero.name;
+                });
+            } catch (erro) {
+                console.error("Erro ao carregar gêneros:", erro);
+            }
+        }
+
+        // LOGIN DO ADMINISTRADOR
+        loginForm.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+
+            mensagemLogin.textContent = "Entrando...";
+
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+
+            const { error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: senha
+            });
+
+            if (error) {
+                mensagemLogin.textContent = "Não foi possível entrar. Confira e-mail e senha.";
+            } else {
+                mensagemLogin.textContent = "Login realizado!";
+            }
+        });
+
+        // SAIR DA CONTA
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            await supabase.auth.signOut();
+        });
+
+        // ATUALIZAR INTERFACE DE LOGIN
+        function atualizarLogin() {
+            loginForm.hidden = !!sessao;
+            usuarioLogado.hidden = !sessao;
+        }
+
+        // IDENTIFICAR SE HÁ USUÁRIO CONECTADO
+        supabase.auth.onAuthStateChange((_evento, novaSessao) => {
+            sessao = novaSessao;
+            atualizarLogin();
+        });
+
+        // PESQUISAR FILMES NO TMDB
+        async function pesquisarFilmes() {
+            const pesquisa = campoBusca.value.trim();
+
+            if (!pesquisa) {
+                mensagemBusca.textContent = "Digite o nome de um filme.";
+                return;
+            }
+
+            resultadosBusca.innerHTML = "";
+            mensagemBusca.textContent = "Procurando filmes...";
+
+            try {
+                const resposta = await fetch(
+                    `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(pesquisa)}&include_adult=false`
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Erro na pesquisa do TMDB.");
+                }
+
+                const dados = await resposta.json();
+
+                mensagemBusca.textContent = dados.results.length
+                    ? "Selecione o filme que deseja adicionar:"
+                    : "Nenhum filme encontrado.";
+
+                dados.results.slice(0, 10).forEach(filme => {
+                    const generos = (filme.genre_ids || [])
+                        .map(id => generosTMDB[id])
+                        .filter(Boolean)
+                        .join(", ");
+
+                    const poster = filme.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                        : "";
+
+                    resultadosBusca.innerHTML += `
+                        <div class="resultado-filme">
+                            ${poster ? `<img src="${poster}" alt="${escapar(filme.title)}">` : ""}
+                            <div>
+                                <h3>${escapar(filme.title)}</h3>
+                                <p>${escapar(filme.overview || "Sinopse indisponível.")}</p>
+                                <p><strong>Lançamento:</strong> ${escapar(filme.release_date || "Não informado")}</p>
+                                <p><strong>Gêneros:</strong> ${escapar(generos || "Não informado")}</p>
+                                <button class="adicionarBtn" data-id="${filme.id}">
+                                    Adicionar ao MOZINHOFLIX
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (erro) {
+                mensagemBusca.textContent = "Erro na pesquisa. Confira a configuração da API.";
+                console.error(erro);
+            }
+        }
+
+        document.getElementById("buscarBtn").addEventListener("click", pesquisarFilmes);
+
+        campoBusca.addEventListener("keydown", evento => {
+            if (evento.key === "Enter") {
+                pesquisarFilmes();
+            }
+        });
+
+        // ADICIONAR FILME AO SUPABASE
+        resultadosBusca.addEventListener("click", async evento => {
+            const botao = evento.target.closest(".adicionarBtn");
+
+            if (!botao) return;
+
+            if (!sessao) {
+                mensagemBusca.textContent = "Entre como administrador para adicionar filmes.";
+                return;
+            }
+
+            const idFilme = Number(botao.dataset.id);
+            botao.disabled = true;
+            botao.textContent = "Adicionando...";
+
+            try {
+                const resposta = await fetch(
+                    `https://api.themoviedb.org/3/movie/${idFilme}?api_key=${TMDB_API_KEY}&language=pt-BR`
+                );
+
+                if (!resposta.ok) throw new Error("Não foi possível obter os dados do filme.");
+
+                const filme = await resposta.json();
+
+                const nomesGeneros = (filme.genres || []).map(genero => genero.name);
+
+                const { error } = await supabase
+                    .from("filmes")
+                    .insert({
+                        tmdb_id: filme.id,
+                        titulo: filme.title,
+                        sinopse: filme.overview,
+                        poster_path: filme.poster_path,
+                        data_lancamento: filme.release_date || null,
+                        generos: nomesGeneros,
+                        adicionado_por: sessao.user.id
+                    });
+
+                if (error) {
+                    if (error.code === "23505") {
+                        mensagemBusca.textContent = "Esse filme já está no nosso catálogo!";
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    mensagemBusca.textContent = "Filme adicionado com sucesso! ❤️";
+                    carregarFilmes();
+                }
+
+            } catch (erro) {
+                console.error(erro);
+                mensagemBusca.textContent = "Não foi possível adicionar o filme. Confira o login e as permissões.";
+            }
+
+            botao.disabled = false;
+            botao.textContent = "Adicionar ao MOZINHOFLIX";
+        });
+
+        // CARREGAR FILMES DO BANCO DE DADOS
+        async function carregarFilmes() {
+            listaFilmes.textContent = "Carregando filmes...";
+
+            const { data, error } = await supabase
+                .from("filmes")
+                .select("*")
+                .order("criado_em", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                listaFilmes.textContent = "Não foi possível carregar os filmes.";
+                return;
+            }
+
+            if (!data.length) {
+                listaFilmes.textContent = "Nosso catálogo ainda está vazio. Vamos adicionar alguns filmes! ❤️";
+                return;
+            }
+
+            listaFilmes.innerHTML = "";
+
+            data.forEach(filme => {
+                const poster = filme.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                    : "";
+
+                listaFilmes.innerHTML += `
+                    <div class="filme-catalogo">
+                        ${poster ? `<img src="${poster}" alt="${escapar(filme.titulo)}">` : ""}
+                        <div class="informacoes-filme">
+                            <h3>${escapar(filme.titulo)}</h3>
+                            <p>${escapar(filme.sinopse || "Sinopse indisponível.")}</p>
+                            <p class="genero">${escapar((filme.generos || []).join(", "))}</p>
+                            <p><strong>Lançamento:</strong> ${escapar(filme.data_lancamento || "Não informado")}</p>
+                            ${sessao ? `<button class="excluirBtn" data-id="${filme.id}">Excluir filme</button>` : ""}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // EXCLUIR FILME DO CATÁLOGO
+        listaFilmes.addEventListener("click", async evento => {
+            const botao = evento.target.closest(".excluirBtn");
+
+            if (!botao || !sessao) return;
+
+            if (!confirm("Deseja realmente excluir este filme do catálogo?")) return;
+
+            const { error } = await supabase
+                .from("filmes")
+                .delete()
+                .eq("id", botao.dataset.id);
+
+            if (error) {
+                alert("Não foi possível excluir o filme.");
+                console.error(error);
+            } else {
+                carregarFilmes();
+            }
+        });
+
+        // INICIAR SITE
+        async function iniciarSite() {
+            await carregarGeneros();
+
+            const { data } = await supabase.auth.getSession();
+            sessao = data.session;
+            atualizarLogin();
+
+            await carregarFilmes();
+        }
+
+        iniciarSite();
+    </script>
+
+</body>
 </html>

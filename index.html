@@ -450,10 +450,11 @@
             }
 
             filmesCarregados = data;
+            const filmesPendentes = data.filter(filme => !filme.assistido);
 
             listaFilmes.innerHTML = "";
 
-            data.forEach((filme, index) => {
+            filmesPendentes.forEach((filme, index) => {
 
                 const poster = filme.poster_path
                     ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
@@ -476,6 +477,13 @@
                         }
 
                         <h3>${escapar(filme.titulo)}</h3>
+
+                        <button
+                            class="marcarAssistidoBtn"
+                            data-id="${filme.id}"
+                        >
+                            ✓ Já assistido
+                        </button>
 
                     </article>
 
@@ -575,6 +583,7 @@
         // CLICAR NA CAPA PARA ABRIR DETALHES
 
         listaFilmes.addEventListener("click", evento => {
+            if (evento.target.closest(".marcarAssistidoBtn")) return;
 
             const card = evento.target.closest(".filme-catalogo");
 
@@ -614,6 +623,46 @@
             }
 
         });
+
+        // MARCAR FILME COMO ASSISTIDO
+        
+        listaFilmes.addEventListener("click", async evento => {
+        
+            const botao = evento.target.closest(".marcarAssistidoBtn");
+        
+            if (!botao) return;
+        
+            evento.stopPropagation();
+        
+            const idFilme = botao.dataset.id;
+        
+            botao.disabled = true;
+            botao.textContent = "Salvando...";
+        
+            try {
+        
+                const { error } = await clienteSupabase
+                    .from("filmes")
+                    .update({ assistido: true })
+                    .eq("id", idFilme);
+        
+                if (error) throw error;
+        
+                await carregarFilmes();
+        
+            } catch (erro) {
+        
+                console.error(erro);
+        
+                alert("Não foi possível marcar o filme como assistido.");
+        
+                botao.disabled = false;
+                botao.textContent = "✓ Já assistido";
+        
+            }
+        
+        });
+
 
         // FECHAR JANELA DE DETALHES
 
@@ -672,6 +721,34 @@
 
         });
 
+
+        // ABRIR E FECHAR MENU
+        
+        const menuBotao = document.getElementById("menuBotao");
+        const menuOpcoes = document.getElementById("menuOpcoes");
+        
+        menuBotao.addEventListener("click", () => {
+        
+            const aberto = menuOpcoes.classList.toggle("aberto");
+        
+            menuBotao.textContent = aberto ? "✕" : "☰";
+        
+        });
+        
+        document.addEventListener("click", evento => {
+        
+            if (
+                !evento.target.closest(".menu-navegacao")
+            ) {
+        
+                menuOpcoes.classList.remove("aberto");
+                menuBotao.textContent = "☰";
+        
+            }
+        
+        });
+
+        
         // INICIAR SITE
 
         async function iniciarSite() {

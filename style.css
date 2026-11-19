@@ -534,23 +534,6 @@ input {
 }
 
 .menu-opcoes a {
-    padding: 16px;
-    color: white;
-    text-shadow: 2px 2px 4px black;
-}
-
-.menu-opcoes a:hover {
-    background: #650000;
-}
-
-@media (max-width: 600px) {
-    .menu-navegacao {
-        top: 12px;
-        right: 12px;
-    }
-}
-
-.menu-opcoes a {
     font-family: "Trebuchet MS", Arial, sans-serif;
     text-decoration: none;
     color: white;
@@ -561,6 +544,13 @@ input {
 .menu-opcoes a:hover {
     text-decoration: none;
     color: #ff4b4b;
+}
+
+@media (max-width: 600px) {
+    .menu-navegacao {
+        top: 12px;
+        right: 12px;
+    }
 }
 
 /* CABEÇALHO DA PÁGINA DE ASSISTIDOS */

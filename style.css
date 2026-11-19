@@ -455,3 +455,43 @@ input {
     }
 
 }
+
+    
+/* CORREÇÃO DA JANELA DE DETALHES NO CELULAR */
+
+@media (max-width: 600px) {
+
+    .modal-detalhes {
+        align-items: flex-start;
+        justify-content: center;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 12px;
+        padding-bottom: calc(30px + env(safe-area-inset-bottom));
+    }
+
+    .modal-conteudo {
+        width: 100%;
+        max-height: none;
+        margin: 0 auto;
+        padding: 50px 20px 30px;
+        flex-shrink: 0;
+    }
+
+    .detalhes-corpo {
+        width: 100%;
+        gap: 20px;
+    }
+
+    #posterDetalhes {
+        width: 180px;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .detalhes-informacoes {
+        width: 100%;
+        min-width: 0;
+    }
+
+}

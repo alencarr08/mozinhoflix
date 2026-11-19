@@ -536,8 +536,8 @@ input {
 .menu-opcoes a {
     padding: 16px;
     color: white;
-    text-decoration: none;
     font-family: 'Playfair Display', serif;
+    text-shadow: 2px 2px 4px black;
 }
 
 .menu-opcoes a:hover {

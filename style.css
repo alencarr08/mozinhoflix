@@ -536,7 +536,6 @@ input {
 .menu-opcoes a {
     padding: 16px;
     color: white;
-    font-family: 'Playfair Display', serif;
     text-shadow: 2px 2px 4px black;
 }
 
@@ -551,6 +550,18 @@ input {
     }
 }
 
+.menu-opcoes a {
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    text-decoration: none;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.menu-opcoes a:hover {
+    text-decoration: none;
+    color: #ff4b4b;
+}
 
 /* CABEÇALHO DA PÁGINA DE ASSISTIDOS */
 

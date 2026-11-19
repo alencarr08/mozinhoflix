@@ -754,11 +754,15 @@ confirmarAvaliacao.addEventListener("click", async () => {
 
     } catch (erro) {
 
-        console.error(erro);
+    console.error("ERRO AO SALVAR A AVALIAÇÃO:", erro);
 
-        alert("Não foi possível salvar a avaliação.");
+    alert(
+        "Erro: " + erro.message +
+        "\nCódigo: " + (erro.code || "Não informado") +
+        "\nDetalhes: " + (erro.details || "Nenhum")
+    );
 
-    } finally {
+} finally {
 
         confirmarAvaliacao.disabled = false;
         confirmarAvaliacao.textContent = "Confirmar avaliação";

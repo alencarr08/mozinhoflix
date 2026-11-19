@@ -664,3 +664,26 @@ input {
 .selecao-estrelas button:hover {
     transform: scale(1.15);
 }
+
+
+/* AVALIAÇÃO DOS FILMES */
+
+.estrelas-detalhes {
+    color: #f5b942;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-top: 8px;
+    text-shadow: 0 1px 5px rgba(245, 185, 66, 0.18);
+}
+
+/* NOTA NUMÉRICA */
+
+.estrelas-detalhes .nota-numero {
+    color: #bdbdbd;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-shadow: none;
+    margin-left: 8px;
+}

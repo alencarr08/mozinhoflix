@@ -141,6 +141,13 @@
 
                     <p id="generosDetalhes"></p>
 
+                    <button
+                        id="marcarAssistidoDetalhes"
+                        class="marcarAssistidoBtn"
+                    >
+                        Assistimos ✓
+                    </button>
+
                 </div>
 
             </div>
@@ -478,13 +485,6 @@
 
                         <h3>${escapar(filme.titulo)}</h3>
 
-                        <button
-                            class="marcarAssistidoBtn"
-                            data-id="${filme.id}"
-                        >
-                            ✓ Já assistido
-                        </button>
-
                     </article>
 
                 `;
@@ -496,6 +496,7 @@
         // ABRIR DETALHES DO FILME
 
         async function abrirDetalhes(filme) {
+            document.getElementById("marcarAssistidoDetalhes").dataset.id = filme.id;
 
             const identificador = ++requisicaoDetalhes;
 
@@ -626,13 +627,11 @@
 
         // MARCAR FILME COMO ASSISTIDO
         
-        listaFilmes.addEventListener("click", async evento => {
-        
-            const botao = evento.target.closest(".marcarAssistidoBtn");
+        modalDetalhes.addEventListener("click", async evento => {
+
+            const botao = evento.target.closest("#marcarAssistidoDetalhes");
         
             if (!botao) return;
-        
-            evento.stopPropagation();
         
             const idFilme = botao.dataset.id;
         
@@ -648,6 +647,7 @@
         
                 if (error) throw error;
         
+                fecharDetalhes();
                 await carregarFilmes();
         
             } catch (erro) {

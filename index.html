@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -454,8 +453,8 @@
 
             }
 
-            filmesCarregados = data;
-            const filmesPendentes = data.filter(filme => !filme.assistido);
+            filmesCarregados = data.filter(filme => !filme.assistido);
+            const filmesPendentes = filmesCarregados;
 
             listaFilmes.innerHTML = "";
 

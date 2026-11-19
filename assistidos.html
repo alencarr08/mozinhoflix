@@ -109,6 +109,10 @@
 
                     <p id="generosDetalhes"></p>
 
+                    <p class="rotulo-detalhes">NOSSA AVALIAÇÃO</p>
+
+                    <p id="estrelasDetalhes" class="estrelas-detalhes"></p>
+
                 </div>
 
             </div>
@@ -160,6 +164,8 @@
         const sinopseDetalhes = document.getElementById("sinopseDetalhes");
 
         const generosDetalhes = document.getElementById("generosDetalhes");
+
+        const estrelasDetalhes = document.getElementById("estrelasDetalhes");
 
         let filmesAssistidos = [];
 
@@ -291,6 +297,23 @@
 
             generosDetalhes.textContent =
                 generos || "Gêneros não informados.";
+
+            // MOSTRAR AVALIAÇÃO DO FILME
+
+const nota = Number(filme.estrelas);
+
+if (Number.isInteger(nota) && nota >= 1 && nota <= 5) {
+
+    estrelasDetalhes.textContent =
+        "★".repeat(nota) +
+        "☆".repeat(5 - nota) +
+        ` (${nota}/5)`;
+
+} else {
+
+    estrelasDetalhes.textContent = "Ainda sem avaliação.";
+
+}
 
             duracaoDetalhes.textContent = "Consultando duração...";
 

@@ -153,6 +153,48 @@
 
     </div>
 
+    
+<!-- JANELA DE AVALIAÇÃO -->
+
+<div id="modalAvaliacao" class="modal-detalhes" aria-hidden="true">
+
+    <div class="modal-conteudo" role="dialog" aria-modal="true">
+
+        <button class="fechar-modal" id="fecharAvaliacao">
+            &times;
+        </button>
+
+        <div class="detalhes-informacoes">
+
+            <h2>Vocês assistiram! ❤️</h2>
+
+            <p>Quantas estrelas vocês dão para esse filme?</p>
+
+            <div id="selecaoEstrelas" class="selecao-estrelas">
+
+                <button type="button" data-nota="1">★</button>
+                <button type="button" data-nota="2">★</button>
+                <button type="button" data-nota="3">★</button>
+                <button type="button" data-nota="4">★</button>
+                <button type="button" data-nota="5">★</button>
+
+            </div>
+
+            <p id="mensagemAvaliacao">
+                Escolham de 1 a 5 estrelas.
+            </p>
+
+            <button id="confirmarAvaliacao" disabled>
+                Confirmar avaliação
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
     <footer></footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -175,6 +217,14 @@
         let generosTMDB = {};
         let filmesCarregados = [];
         let requisicaoDetalhes = 0;
+        let filmeAvaliacaoId = null;
+        let notaSelecionada = 0;
+        
+        const modalAvaliacao = document.getElementById("modalAvaliacao");
+        const fecharAvaliacao = document.getElementById("fecharAvaliacao");
+        const selecaoEstrelas = document.getElementById("selecaoEstrelas");
+        const confirmarAvaliacao = document.getElementById("confirmarAvaliacao");
+        const mensagemAvaliacao = document.getElementById("mensagemAvaliacao");
 
         // ELEMENTOS DA PÁGINA
 
@@ -622,43 +672,129 @@
 
         });
 
-        // MARCAR FILME COMO ASSISTIDO
-        
-        modalDetalhes.addEventListener("click", async evento => {
+       
+// ABRIR JANELA DE AVALIAÇÃO
 
-            const botao = evento.target.closest("#marcarAssistidoDetalhes");
-        
-            if (!botao) return;
-        
-            const idFilme = botao.dataset.id;
-        
-            botao.disabled = true;
-            botao.textContent = "Salvando...";
-        
-            try {
-        
-                const { error } = await clienteSupabase
-                    .from("filmes")
-                    .update({ assistido: true })
-                    .eq("id", idFilme);
-        
-                if (error) throw error;
-        
-                fecharDetalhes();
-                await carregarFilmes();
-        
-            } catch (erro) {
-        
-                console.error(erro);
-        
-                alert("Não foi possível marcar o filme como assistido.");
-        
-                botao.disabled = false;
-                botao.textContent = "✓ Já assistido";
-        
-            }
-        
-        });
+listaFilmes.addEventListener("click", evento => {
+
+    const botao = evento.target.closest(".marcarAssistidoBtn");
+
+    if (!botao) return;
+
+    evento.stopPropagation();
+
+    filmeAvaliacaoId = botao.dataset.id;
+    notaSelecionada = 0;
+
+    selecaoEstrelas.querySelectorAll("button").forEach(estrelа => {
+        estrelа.classList.remove("selecionada");
+    });
+
+    mensagemAvaliacao.textContent = "Escolham de 1 a 5 estrelas.";
+    confirmarAvaliacao.disabled = true;
+
+    modalAvaliacao.classList.add("ativo");
+    modalAvaliacao.setAttribute("aria-hidden", "false");
+
+    document.body.style.overflow = "hidden";
+
+});
+
+
+// ESCOLHER ESTRELAS
+
+selecaoEstrelas.addEventListener("click", evento => {
+
+    const botao = evento.target.closest("button[data-nota]");
+
+    if (!botao) return;
+
+    notaSelecionada = Number(botao.dataset.nota);
+
+    selecaoEstrelas.querySelectorAll("button").forEach(estrela => {
+
+        const nota = Number(estrela.dataset.nota);
+
+        estrela.classList.toggle(
+            "selecionada",
+            nota <= notaSelecionada
+        );
+
+    });
+
+    mensagemAvaliacao.textContent =
+        `${notaSelecionada} de 5 estrelas escolhidas!`;
+
+    confirmarAvaliacao.disabled = false;
+
+});
+
+
+// CONFIRMAR AVALIAÇÃO E MARCAR COMO ASSISTIDO
+
+confirmarAvaliacao.addEventListener("click", async () => {
+
+    if (!filmeAvaliacaoId || notaSelecionada === 0) return;
+
+    confirmarAvaliacao.disabled = true;
+    confirmarAvaliacao.textContent = "Salvando...";
+
+    try {
+
+        const { error } = await clienteSupabase
+            .from("filmes")
+            .update({
+                assistido: true,
+                estrelas: notaSelecionada
+            })
+            .eq("id", filmeAvaliacaoId);
+
+        if (error) throw error;
+
+        fecharJanelaAvaliacao();
+
+        await carregarFilmes();
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        alert("Não foi possível salvar a avaliação.");
+
+    } finally {
+
+        confirmarAvaliacao.disabled = false;
+        confirmarAvaliacao.textContent = "Confirmar avaliação";
+
+    }
+
+});
+
+
+// FECHAR JANELA DE AVALIAÇÃO
+
+function fecharJanelaAvaliacao() {
+
+    modalAvaliacao.classList.remove("ativo");
+    modalAvaliacao.setAttribute("aria-hidden", "true");
+
+    document.body.style.overflow = "";
+
+    filmeAvaliacaoId = null;
+    notaSelecionada = 0;
+
+}
+
+fecharAvaliacao.addEventListener("click", fecharJanelaAvaliacao);
+
+modalAvaliacao.addEventListener("click", evento => {
+
+    if (evento.target === modalAvaliacao) {
+        fecharJanelaAvaliacao();
+    }
+
+});
+
 
 
         // FECHAR JANELA DE DETALHES

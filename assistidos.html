@@ -1,1 +1,468 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="icon" href="https://em-content.zobj.net/source/apple/391/clapper-board_1f3ac.png">
+
+    <title>FILMES ASSISTIDOS | MOZINHOFLIX</title>
+</head>
+
+<body>
+
+    <header>
+
+        <!-- MENU HAMBURGUER -->
+        <nav class="menu-navegacao">
+
+            <button id="menuBotao" class="menu-botao" aria-label="Abrir menu">
+                ☰
+            </button>
+
+            <div id="menuOpcoes" class="menu-opcoes">
+
+                <a href="index.html">🏠 Início</a>
+                <a href="assistidos.html">🎬 Filmes assistidos</a>
+
+            </div>
+
+        </nav>
+
+        <h1>MOZINHOFLIX</h1>
+
+        <h2>FILMES ASSISTIDOS</h2>
+
+        <h3>Todos os filmes que já assistimos juntinhas! ❤️</h3>
+
+    </header>
+
+    <main>
+
+        <section class="catalogo">
+
+            <h2>NOSSA COLEÇÃO DE FILMES</h2>
+
+            <div id="listaAssistidos" class="grade-assistidos">
+
+                <p class="mensagem-assistidos">
+                    Carregando nossos filmes...
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- JANELA DE DETALHES DO FILME -->
+
+    <div
+        id="modalDetalhes"
+        class="modal-detalhes"
+        aria-hidden="true"
+    >
+
+        <div
+            class="modal-conteudo"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tituloDetalhes"
+        >
+
+            <button
+                class="fechar-modal"
+                id="fecharModal"
+                aria-label="Fechar"
+            >
+                &times;
+            </button>
+
+            <div class="detalhes-corpo">
+
+                <img
+                    id="posterDetalhes"
+                    src=""
+                    alt="Pôster do filme"
+                >
+
+                <div class="detalhes-informacoes">
+
+                    <h2 id="tituloDetalhes"></h2>
+
+                    <div class="detalhes-metadados">
+
+                        <span id="anoDetalhes"></span>
+
+                        <span id="duracaoDetalhes"></span>
+
+                    </div>
+
+                    <p class="rotulo-detalhes">SINOPSE</p>
+
+                    <p id="sinopseDetalhes"></p>
+
+                    <p class="rotulo-detalhes">GÊNEROS</p>
+
+                    <p id="generosDetalhes"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <footer></footer>
+
+
+    <!-- SUPABASE -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+
+        // CONFIGURAÇÕES
+
+        const SUPABASE_URL = "https://xaeeqggwfbftedrppyfj.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CPlL2dpxj5UVAxys6e1Ocg_xiE9PEBH";
+
+        const TMDB_API_KEY = "12b98db281f885582d19d37942c5f3ed";
+
+        const clienteSupabase = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+
+        // ELEMENTOS
+
+        const listaAssistidos = document.getElementById("listaAssistidos");
+
+        const modalDetalhes = document.getElementById("modalDetalhes");
+
+        const fecharModal = document.getElementById("fecharModal");
+
+        const posterDetalhes = document.getElementById("posterDetalhes");
+
+        const tituloDetalhes = document.getElementById("tituloDetalhes");
+
+        const anoDetalhes = document.getElementById("anoDetalhes");
+
+        const duracaoDetalhes = document.getElementById("duracaoDetalhes");
+
+        const sinopseDetalhes = document.getElementById("sinopseDetalhes");
+
+        const generosDetalhes = document.getElementById("generosDetalhes");
+
+        let filmesAssistidos = [];
+
+        let requisicaoDetalhes = 0;
+
+
+        // PROTEGER TEXTOS
+
+        function escapar(texto) {
+
+            return String(texto ?? "").replace(/[&<>"']/g, caractere => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            })[caractere]);
+
+        }
+
+
+        // CARREGAR FILMES ASSISTIDOS
+
+        async function carregarAssistidos() {
+
+            listaAssistidos.innerHTML = `
+                <p class="mensagem-assistidos">
+                    Carregando nossos filmes...
+                </p>
+            `;
+
+            const { data, error } = await clienteSupabase
+                .from("filmes")
+                .select("*")
+                .eq("assistido", true)
+                .order("criado_em", { ascending: false });
+
+            if (error) {
+
+                console.error(error);
+
+                listaAssistidos.innerHTML = `
+                    <p class="mensagem-assistidos">
+                        Não foi possível carregar os filmes.
+                    </p>
+                `;
+
+                return;
+
+            }
+
+            filmesAssistidos = data || [];
+
+            if (filmesAssistidos.length === 0) {
+
+                listaAssistidos.innerHTML = `
+                    <p class="mensagem-assistidos">
+                        Ainda não temos filmes assistidos. ❤️
+                    </p>
+                `;
+
+                return;
+
+            }
+
+            listaAssistidos.innerHTML = "";
+
+            filmesAssistidos.forEach(filme => {
+
+                const poster = filme.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                    : "";
+
+                listaAssistidos.innerHTML += `
+
+                    <article
+                        class="filme-catalogo"
+                        data-id="${filme.id}"
+                        tabindex="0"
+                        role="button"
+                        aria-label="Ver detalhes de ${escapar(filme.titulo)}"
+                    >
+
+                        ${
+                            poster
+                                ? `<img src="${poster}" alt="${escapar(filme.titulo)}" loading="lazy">`
+                                : `<div class="poster-indisponivel">Sem pôster</div>`
+                        }
+
+                        <h3>${escapar(filme.titulo)}</h3>
+
+                    </article>
+
+                `;
+
+            });
+
+        }
+
+
+        // ABRIR DETALHES DO FILME
+
+        async function abrirDetalhes(filme) {
+
+            const identificador = ++requisicaoDetalhes;
+
+            const poster = filme.poster_path
+                ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                : "";
+
+            posterDetalhes.src = poster;
+
+            posterDetalhes.alt = escapar(filme.titulo);
+
+            posterDetalhes.hidden = !poster;
+
+            tituloDetalhes.textContent = filme.titulo || "Filme";
+
+            anoDetalhes.textContent = filme.data_lancamento
+                ? filme.data_lancamento.substring(0, 4)
+                : "Ano não informado";
+
+            sinopseDetalhes.textContent =
+                filme.sinopse || "Sinopse indisponível.";
+
+            const generos = Array.isArray(filme.generos)
+                ? filme.generos.join(", ")
+                : "";
+
+            generosDetalhes.textContent =
+                generos || "Gêneros não informados.";
+
+            duracaoDetalhes.textContent = "Consultando duração...";
+
+            modalDetalhes.classList.add("ativo");
+
+            modalDetalhes.setAttribute("aria-hidden", "false");
+
+            document.body.style.overflow = "hidden";
+
+            fecharModal.focus();
+
+
+            // BUSCAR DURAÇÃO NO TMDB
+
+            if (!filme.tmdb_id) {
+
+                duracaoDetalhes.textContent = "Duração não informada.";
+
+                return;
+
+            }
+
+            try {
+
+                const resposta = await fetch(
+                    `https://api.themoviedb.org/3/movie/${filme.tmdb_id}?api_key=${TMDB_API_KEY}&language=pt-BR`
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Erro ao consultar duração.");
+                }
+
+                const detalhes = await resposta.json();
+
+                if (identificador !== requisicaoDetalhes) return;
+
+                duracaoDetalhes.textContent = detalhes.runtime
+                    ? `${detalhes.runtime} minutos`
+                    : "Duração não informada.";
+
+            } catch (erro) {
+
+                console.error(erro);
+
+                if (identificador === requisicaoDetalhes) {
+
+                    duracaoDetalhes.textContent =
+                        "Duração indisponível.";
+
+                }
+
+            }
+
+        }
+
+
+        // CLICAR NO FILME
+
+        listaAssistidos.addEventListener("click", evento => {
+
+            const card = evento.target.closest(".filme-catalogo");
+
+            if (!card) return;
+
+            const filme = filmesAssistidos.find(
+                item => String(item.id) === card.dataset.id
+            );
+
+            if (filme) {
+                abrirDetalhes(filme);
+            }
+
+        });
+
+
+        // ABRIR DETALHES PELO TECLADO
+
+        listaAssistidos.addEventListener("keydown", evento => {
+
+            if (
+                evento.key !== "Enter" &&
+                evento.key !== " "
+            ) return;
+
+            const card = evento.target.closest(".filme-catalogo");
+
+            if (!card) return;
+
+            evento.preventDefault();
+
+            const filme = filmesAssistidos.find(
+                item => String(item.id) === card.dataset.id
+            );
+
+            if (filme) {
+                abrirDetalhes(filme);
+            }
+
+        });
+
+
+        // FECHAR DETALHES
+
+        function fecharDetalhes() {
+
+            requisicaoDetalhes++;
+
+            modalDetalhes.classList.remove("ativo");
+
+            modalDetalhes.setAttribute("aria-hidden", "true");
+
+            document.body.style.overflow = "";
+
+        }
+
+        fecharModal.addEventListener("click", fecharDetalhes);
+
+        modalDetalhes.addEventListener("click", evento => {
+
+            if (evento.target === modalDetalhes) {
+                fecharDetalhes();
+            }
+
+        });
+
+        document.addEventListener("keydown", evento => {
+
+            if (
+                evento.key === "Escape" &&
+                modalDetalhes.classList.contains("ativo")
+            ) {
+                fecharDetalhes();
+            }
+
+        });
+
+
+        // MENU HAMBURGUER
+
+        const menuBotao = document.getElementById("menuBotao");
+
+        const menuOpcoes = document.getElementById("menuOpcoes");
+
+        menuBotao.addEventListener("click", () => {
+
+            const aberto = menuOpcoes.classList.toggle("aberto");
+
+            menuBotao.textContent = aberto ? "✕" : "☰";
+
+        });
+
+        document.addEventListener("click", evento => {
+
+            if (!evento.target.closest(".menu-navegacao")) {
+
+                menuOpcoes.classList.remove("aberto");
+
+                menuBotao.textContent = "☰";
+
+            }
+
+        });
+
+
+        // INICIAR PÁGINA
+
+        carregarAssistidos();
+
+    </script>
+
+</body>
+
+</html>

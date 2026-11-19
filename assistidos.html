@@ -16,7 +16,6 @@
 
     <header class="cabecalho-assistidos">
 
-        <!-- MENU HAMBURGUER -->
         <nav class="menu-navegacao">
 
             <button id="menuBotao" class="menu-botao" aria-label="Abrir menu">
@@ -24,17 +23,13 @@
             </button>
 
             <div id="menuOpcoes" class="menu-opcoes">
-
                 <a href="index.html">🏠 Início</a>
-
             </div>
 
         </nav>
 
         <h1>MOZINHOFLIX</h1>
-
         <h2>FILMES ASSISTIDOS</h2>
-
         <h3>Alguns filmes que já assistimos juntas! ❤️</h3>
 
     </header>
@@ -60,58 +55,42 @@
 
     <!-- JANELA DE DETALHES DO FILME -->
 
-    <div
-        id="modalDetalhes"
-        class="modal-detalhes"
-        aria-hidden="true"
-    >
+    <div id="modalDetalhes" class="modal-detalhes" aria-hidden="true">
 
-        <div
-            class="modal-conteudo"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tituloDetalhes"
-        >
+        <div class="modal-conteudo"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="tituloDetalhes">
 
-            <button
-                class="fechar-modal"
-                id="fecharModal"
-                aria-label="Fechar"
-            >
+            <button class="fechar-modal"
+                    id="fecharModal"
+                    aria-label="Fechar">
                 &times;
             </button>
 
             <div class="detalhes-corpo">
 
-                <img
-                    id="posterDetalhes"
-                    src=""
-                    alt="Pôster do filme"
-                >
+                <img id="posterDetalhes"
+                     src=""
+                     alt="Pôster do filme">
 
                 <div class="detalhes-informacoes">
 
                     <h2 id="tituloDetalhes"></h2>
 
                     <div class="detalhes-metadados">
-
                         <span id="anoDetalhes"></span>
-
                         <span id="duracaoDetalhes"></span>
-
                     </div>
 
                     <p class="rotulo-detalhes">SINOPSE</p>
-
                     <p id="sinopseDetalhes"></p>
 
-                    <p class="rotulo-detalhes">GÊNEROS</p>
-
-                    <p id="generosDetalhes"></p>
-
                     <p class="rotulo-detalhes">NOSSA AVALIAÇÃO</p>
-
                     <p id="estrelasDetalhes" class="estrelas-detalhes"></p>
+
+                    <p class="rotulo-detalhes">GÊNEROS</p>
+                    <p id="generosDetalhes"></p>
 
                 </div>
 
@@ -123,9 +102,6 @@
 
 
     <footer></footer>
-
-
-    <!-- SUPABASE -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -277,9 +253,7 @@
                 : "";
 
             posterDetalhes.src = poster;
-
             posterDetalhes.alt = escapar(filme.titulo);
-
             posterDetalhes.hidden = !poster;
 
             tituloDetalhes.textContent = filme.titulo || "Filme";
@@ -291,29 +265,36 @@
             sinopseDetalhes.textContent =
                 filme.sinopse || "Sinopse indisponível.";
 
+
+            // MOSTRAR AVALIAÇÃO
+
+            const nota = Number(filme.estrelas);
+
+            if (Number.isInteger(nota) && nota >= 1 && nota <= 5) {
+
+                estrelasDetalhes.innerHTML = `
+                    <span class="estrelas-preenchidas">
+                        ${"★".repeat(nota)}
+                    </span><span class="estrelas-vazias">${"☆".repeat(5 - nota)}</span><span class="nota-numero">${nota}/5</span>
+                `;
+
+            } else {
+
+                estrelasDetalhes.innerHTML = `
+                    <span class="sem-avaliacao">
+                        Ainda sem avaliação.
+                    </span>
+                `;
+
+            }
+
+
             const generos = Array.isArray(filme.generos)
                 ? filme.generos.join(", ")
                 : "";
 
             generosDetalhes.textContent =
                 generos || "Gêneros não informados.";
-
-            // MOSTRAR AVALIAÇÃO DO FILME
-
-const nota = Number(filme.estrelas);
-
-if (Number.isInteger(nota) && nota >= 1 && nota <= 5) {
-
-    estrelasDetalhes.textContent =
-        "★".repeat(nota) +
-        "☆".repeat(5 - nota) +
-        ` (${nota}/5)`;
-
-} else {
-
-    estrelasDetalhes.textContent = "Ainda sem avaliação.";
-
-}
 
             duracaoDetalhes.textContent = "Consultando duração...";
 

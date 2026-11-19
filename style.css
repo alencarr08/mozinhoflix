@@ -535,6 +535,7 @@ input {
 
 .menu-opcoes a {
     padding: 16px;
+    text-shadow: 2px 2px 4px black;
     font-family: "Trebuchet MS", Arial, sans-serif;
     text-decoration: none;
     color: white;
@@ -543,9 +544,9 @@ input {
 }
 
 .menu-opcoes a:hover {
-    padding: 16px;
     text-decoration: none;
     color: #ff4b4b;
+    background: #650000;
 }
 
 @media (max-width: 600px) {

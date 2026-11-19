@@ -1,11 +1,14 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://em-content.zobj.net/source/apple/391/clapper-board_1f3ac.png">
+
     <title>MOZINHOFLIX</title>
 </head>
 
@@ -20,6 +23,7 @@
     <main>
 
         <section class="pesquisa">
+
             <h2>ENCONTRE UM FILME</h2>
 
             <div class="barra-pesquisa">
@@ -28,25 +32,112 @@
                     id="campoBusca"
                     placeholder="Digite o nome do filme..."
                 >
+
                 <button id="buscarBtn">Pesquisar</button>
             </div>
 
             <div id="resultadosBusca"></div>
             <p id="mensagemBusca"></p>
+
         </section>
 
         <section class="catalogo">
+
             <h2>NOSSA LISTA DE FILMES</h2>
-            <div id="listaFilmes">Carregando filmes...</div>
+
+            <div class="carrossel-container">
+
+                <button
+                    class="seta-carrossel"
+                    id="anteriorFilmes"
+                    aria-label="Filmes anteriores"
+                >
+                    &#10094;
+                </button>
+
+                <div id="listaFilmes">
+                    Carregando filmes...
+                </div>
+
+                <button
+                    class="seta-carrossel"
+                    id="proximoFilmes"
+                    aria-label="Próximos filmes"
+                >
+                    &#10095;
+                </button>
+
+            </div>
+
         </section>
 
     </main>
+
+    <!-- JANELA DE DETALHES DO FILME -->
+
+    <div
+        id="modalDetalhes"
+        class="modal-detalhes"
+        aria-hidden="true"
+    >
+
+        <div
+            class="modal-conteudo"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tituloDetalhes"
+        >
+
+            <button
+                class="fechar-modal"
+                id="fecharModal"
+                aria-label="Fechar"
+            >
+                &times;
+            </button>
+
+            <div class="detalhes-corpo">
+
+                <img
+                    id="posterDetalhes"
+                    src=""
+                    alt="Pôster do filme"
+                >
+
+                <div class="detalhes-informacoes">
+
+                    <h2 id="tituloDetalhes"></h2>
+
+                    <div class="detalhes-metadados">
+
+                        <span id="anoDetalhes"></span>
+
+                        <span id="duracaoDetalhes"></span>
+
+                    </div>
+
+                    <p class="rotulo-detalhes">SINOPSE</p>
+
+                    <p id="sinopseDetalhes"></p>
+
+                    <p class="rotulo-detalhes">GÊNEROS</p>
+
+                    <p id="generosDetalhes"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
     <footer></footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+
         // CONFIGURAÇÕES
 
         const SUPABASE_URL = "https://xaeeqggwfbftedrppyfj.supabase.co";
@@ -61,6 +152,8 @@
         );
 
         let generosTMDB = {};
+        let filmesCarregados = [];
+        let requisicaoDetalhes = 0;
 
         // ELEMENTOS DA PÁGINA
 
@@ -70,9 +163,20 @@
         const listaFilmes = document.getElementById("listaFilmes");
         const buscarBtn = document.getElementById("buscarBtn");
 
+        const modalDetalhes = document.getElementById("modalDetalhes");
+        const fecharModal = document.getElementById("fecharModal");
+
+        const posterDetalhes = document.getElementById("posterDetalhes");
+        const tituloDetalhes = document.getElementById("tituloDetalhes");
+        const anoDetalhes = document.getElementById("anoDetalhes");
+        const duracaoDetalhes = document.getElementById("duracaoDetalhes");
+        const sinopseDetalhes = document.getElementById("sinopseDetalhes");
+        const generosDetalhes = document.getElementById("generosDetalhes");
+
         // PROTEGER TEXTOS EXIBIDOS NA PÁGINA
 
         function escapar(texto) {
+
             return String(texto ?? "").replace(/[&<>"']/g, caractere => ({
                 "&": "&amp;",
                 "<": "&lt;",
@@ -80,6 +184,7 @@
                 '"': "&quot;",
                 "'": "&#039;"
             })[caractere]);
+
         }
 
         // CARREGAR GÊNEROS DO TMDB
@@ -99,6 +204,7 @@
             dados.genres.forEach(genero => {
                 generosTMDB[genero.id] = genero.name;
             });
+
         }
 
         // PESQUISAR FILMES
@@ -149,14 +255,21 @@
                         : "";
 
                     resultadosBusca.innerHTML += `
+
                         <div class="resultado-filme">
 
-                            ${poster ? `<img src="${poster}" alt="${escapar(filme.title)}">` : ""}
+                            ${poster
+                                ? `<img src="${poster}" alt="${escapar(filme.title)}">`
+                                : ""
+                            }
 
                             <div>
+
                                 <h3>${escapar(filme.title)}</h3>
 
-                                <p>${escapar(filme.overview || "Sinopse indisponível.")}</p>
+                                <p>
+                                    ${escapar(filme.overview || "Sinopse indisponível.")}
+                                </p>
 
                                 <p>
                                     <strong>Lançamento:</strong>
@@ -168,26 +281,34 @@
                                     ${escapar(generos || "Não informado")}
                                 </p>
 
-                                <button class="adicionarBtn" data-id="${filme.id}">
+                                <button
+                                    class="adicionarBtn"
+                                    data-id="${Number(filme.id)}"
+                                >
                                     Adicionar ao MOZINHOFLIX
                                 </button>
+
                             </div>
 
                         </div>
+
                     `;
+
                 });
 
             } catch (erro) {
 
                 console.error(erro);
 
-                mensagemBusca.textContent = "Erro ao pesquisar filmes. Confira a conexão com a API.";
+                mensagemBusca.textContent =
+                    "Erro ao pesquisar filmes. Confira a conexão com a API.";
 
             } finally {
 
                 buscarBtn.disabled = false;
 
             }
+
         }
 
         // BOTÃO DE PESQUISA
@@ -197,9 +318,11 @@
         // PESQUISAR PRESSIONANDO ENTER
 
         campoBusca.addEventListener("keydown", evento => {
+
             if (evento.key === "Enter") {
                 pesquisarFilmes();
             }
+
         });
 
         // ADICIONAR FILME AO SUPABASE
@@ -230,25 +353,33 @@
                 const { error } = await clienteSupabase
                     .from("filmes")
                     .insert({
+
                         tmdb_id: filme.id,
                         titulo: filme.title,
                         sinopse: filme.overview,
                         poster_path: filme.poster_path,
                         data_lancamento: filme.release_date || null,
                         generos: (filme.genres || []).map(genero => genero.name)
+
                     });
 
                 if (error) {
 
                     if (error.code === "23505") {
-                        mensagemBusca.textContent = "Esse filme já está no nosso catálogo! ❤️";
+
+                        mensagemBusca.textContent =
+                            "Esse filme já está no nosso catálogo! ❤️";
+
                     } else {
+
                         throw error;
+
                     }
 
                 } else {
 
-                    mensagemBusca.textContent = "Filme adicionado com sucesso! ❤️";
+                    mensagemBusca.textContent =
+                        "Filme adicionado com sucesso! ❤️";
 
                     await carregarFilmes();
 
@@ -258,7 +389,8 @@
 
                 console.error(erro);
 
-                mensagemBusca.textContent = "Não foi possível adicionar o filme.";
+                mensagemBusca.textContent =
+                    "Não foi possível adicionar o filme.";
 
             } finally {
 
@@ -266,6 +398,7 @@
                 botao.textContent = "Adicionar ao MOZINHOFLIX";
 
             }
+
         });
 
         // CARREGAR CATÁLOGO COMPARTILHADO
@@ -283,52 +416,244 @@
 
                 console.error(error);
 
-                listaFilmes.textContent = "Não foi possível carregar os filmes.";
+                listaFilmes.textContent =
+                    "Não foi possível carregar os filmes.";
 
                 return;
+
             }
 
             if (!data || data.length === 0) {
 
-                listaFilmes.textContent = "Nosso catálogo ainda está vazio. ❤️";
+                listaFilmes.textContent =
+                    "Nosso catálogo ainda está vazio. ❤️";
 
                 return;
+
             }
+
+            filmesCarregados = data;
 
             listaFilmes.innerHTML = "";
 
-            data.forEach(filme => {
+            data.forEach((filme, index) => {
 
                 const poster = filme.poster_path
                     ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
                     : "";
 
                 listaFilmes.innerHTML += `
-                    <div class="filme-catalogo">
 
-                        ${poster ? `<img src="${poster}" alt="${escapar(filme.titulo)}">` : ""}
+                    <article
+                        class="filme-catalogo"
+                        data-indice="${index}"
+                        tabindex="0"
+                        role="button"
+                        aria-label="Ver detalhes de ${escapar(filme.titulo)}"
+                    >
 
-                        <div class="informacoes-filme">
+                        ${
+                            poster
+                                ? `<img src="${poster}" alt="${escapar(filme.titulo)}" loading="lazy">`
+                                : `<div class="poster-indisponivel">Sem pôster</div>`
+                        }
 
-                            <h3>${escapar(filme.titulo)}</h3>
+                        <h3>${escapar(filme.titulo)}</h3>
 
-                            <p>${escapar(filme.sinopse || "Sinopse indisponível.")}</p>
+                    </article>
 
-                            <p class="genero">
-                                ${escapar((filme.generos || []).join(", "))}
-                            </p>
-
-                            <p>
-                                <strong>Lançamento:</strong>
-                                ${escapar(filme.data_lancamento || "Não informado")}
-                            </p>
-
-                        </div>
-
-                    </div>
                 `;
+
             });
+
         }
+
+        // ABRIR DETALHES DO FILME
+
+        async function abrirDetalhes(filme) {
+
+            const identificador = ++requisicaoDetalhes;
+
+            const poster = filme.poster_path
+                ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                : "";
+
+            posterDetalhes.src = poster;
+            posterDetalhes.alt = escapar(filme.titulo);
+            posterDetalhes.hidden = !poster;
+
+            tituloDetalhes.textContent = filme.titulo || "Filme";
+
+            anoDetalhes.textContent = filme.data_lancamento
+                ? filme.data_lancamento.substring(0, 4)
+                : "Ano não informado";
+
+            sinopseDetalhes.textContent =
+                filme.sinopse || "Sinopse indisponível.";
+
+            const generos = Array.isArray(filme.generos)
+                ? filme.generos.join(", ")
+                : "";
+
+            generosDetalhes.textContent =
+                generos || "Gêneros não informados.";
+
+            duracaoDetalhes.textContent = "Consultando duração...";
+
+            modalDetalhes.classList.add("ativo");
+            modalDetalhes.setAttribute("aria-hidden", "false");
+
+            document.body.style.overflow = "hidden";
+
+            fecharModal.focus();
+
+            // BUSCAR DURAÇÃO NO TMDB
+
+            if (!filme.tmdb_id) {
+
+                duracaoDetalhes.textContent = "Duração não informada.";
+                return;
+
+            }
+
+            try {
+
+                const resposta = await fetch(
+                    `https://api.themoviedb.org/3/movie/${filme.tmdb_id}?api_key=${TMDB_API_KEY}&language=pt-BR`
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Não foi possível consultar a duração.");
+                }
+
+                const detalhes = await resposta.json();
+
+                if (identificador !== requisicaoDetalhes) return;
+
+                if (detalhes.runtime) {
+
+                    duracaoDetalhes.textContent =
+                        `${detalhes.runtime} minutos`;
+
+                } else {
+
+                    duracaoDetalhes.textContent =
+                        "Duração não informada.";
+
+                }
+
+            } catch (erro) {
+
+                console.error(erro);
+
+                if (identificador === requisicaoDetalhes) {
+                    duracaoDetalhes.textContent =
+                        "Duração indisponível.";
+                }
+
+            }
+
+        }
+
+        // CLICAR NA CAPA PARA ABRIR DETALHES
+
+        listaFilmes.addEventListener("click", evento => {
+
+            const card = evento.target.closest(".filme-catalogo");
+
+            if (!card) return;
+
+            const indice = Number(card.dataset.indice);
+
+            const filme = filmesCarregados[indice];
+
+            if (filme) {
+                abrirDetalhes(filme);
+            }
+
+        });
+
+        // ABRIR DETALHES PELO TECLADO
+
+        listaFilmes.addEventListener("keydown", evento => {
+
+            if (
+                evento.key !== "Enter" &&
+                evento.key !== " "
+            ) return;
+
+            const card = evento.target.closest(".filme-catalogo");
+
+            if (!card) return;
+
+            evento.preventDefault();
+
+            const filme = filmesCarregados[
+                Number(card.dataset.indice)
+            ];
+
+            if (filme) {
+                abrirDetalhes(filme);
+            }
+
+        });
+
+        // FECHAR JANELA DE DETALHES
+
+        function fecharDetalhes() {
+
+            requisicaoDetalhes++;
+
+            modalDetalhes.classList.remove("ativo");
+            modalDetalhes.setAttribute("aria-hidden", "true");
+
+            document.body.style.overflow = "";
+
+        }
+
+        fecharModal.addEventListener("click", fecharDetalhes);
+
+        modalDetalhes.addEventListener("click", evento => {
+
+            if (evento.target === modalDetalhes) {
+                fecharDetalhes();
+            }
+
+        });
+
+        document.addEventListener("keydown", evento => {
+
+            if (
+                evento.key === "Escape" &&
+                modalDetalhes.classList.contains("ativo")
+            ) {
+                fecharDetalhes();
+            }
+
+        });
+
+        // NAVEGAÇÃO DO CARROSSEL
+
+        const anteriorFilmes = document.getElementById("anteriorFilmes");
+        const proximoFilmes = document.getElementById("proximoFilmes");
+
+        anteriorFilmes.addEventListener("click", () => {
+
+            listaFilmes.scrollBy({
+                left: -listaFilmes.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        });
+
+        proximoFilmes.addEventListener("click", () => {
+
+            listaFilmes.scrollBy({
+                left: listaFilmes.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        });
 
         // INICIAR SITE
 
@@ -344,9 +669,11 @@
 
                 console.error(erro);
 
-                mensagemBusca.textContent = "Erro ao iniciar o site.";
+                mensagemBusca.textContent =
+                    "Erro ao iniciar o site.";
 
             }
+
         }
 
         iniciarSite();
@@ -354,4 +681,5 @@
     </script>
 
 </body>
+
 </html>

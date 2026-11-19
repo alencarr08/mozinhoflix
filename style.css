@@ -13,6 +13,7 @@ body {
 }
 
 /* CABEÇALHO */
+
 header {
     background-image: url('./WhatsApp Image 2026-11-16 at 15.34.46.jpeg');
     background-size: cover;
@@ -41,7 +42,7 @@ h1 {
     font-size: clamp(25px, 4vw, 40px);
 }
 
-header h2{
+header h2 {
     margin-top: 30px;
 }
 
@@ -54,6 +55,7 @@ header h3 {
 }
 
 /* CONTEÚDO PRINCIPAL */
+
 main {
     padding: 2rem;
     display: flex;
@@ -66,26 +68,7 @@ main h2 {
     margin-bottom: 20px;
 }
 
-/* ÁREA DO ADMINISTRADOR */
-.administracao {
-    background: #fff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px #00000015;
-}
-
-#loginForm {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-input {
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-}
+/* BOTÕES */
 
 button {
     padding: 12px 18px;
@@ -106,12 +89,8 @@ button:disabled {
     cursor: not-allowed;
 }
 
-#mensagemLogin,
-#mensagemBusca {
-    margin-top: 12px;
-}
-
 /* PESQUISA */
+
 .pesquisa {
     background: #fff;
     padding: 25px;
@@ -129,7 +108,19 @@ button:disabled {
     min-width: 0;
 }
 
+input {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+#mensagemBusca {
+    margin-top: 12px;
+}
+
 /* RESULTADOS DA PESQUISA */
+
 #resultadosBusca {
     display: flex;
     flex-direction: column;
@@ -137,8 +128,7 @@ button:disabled {
     margin-top: 20px;
 }
 
-.resultado-filme,
-.filme-catalogo {
+.resultado-filme {
     display: flex;
     gap: 20px;
     padding: 15px;
@@ -147,28 +137,26 @@ button:disabled {
     align-items: flex-start;
 }
 
-.resultado-filme img,
-.filme-catalogo img {
+.resultado-filme img {
     width: 140px;
     height: auto;
     border-radius: 6px;
 }
 
-.resultado-filme h3,
-.filme-catalogo h3 {
+.resultado-filme h3 {
     font-family: 'Bungee', sans-serif;
     font-size: 18px;
     margin-bottom: 10px;
 }
 
-.resultado-filme p,
-.filme-catalogo p {
+.resultado-filme p {
     font-family: 'Playfair Display', serif;
     margin-bottom: 10px;
     line-height: 1.5;
 }
 
 /* CATÁLOGO */
+
 .catalogo {
     padding: 25px;
     background: white;
@@ -176,66 +164,184 @@ button:disabled {
     box-shadow: 0 2px 10px #00000015;
 }
 
+.carrossel-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* FILEIRA DE FILMES */
+
 #listaFilmes {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.informacoes-filme {
+    flex-direction: row;
+    gap: 18px;
     flex: 1;
     min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 5px 20px;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
 }
 
-.genero {
-    font-weight: bold;
-}
+/* CAPA INDIVIDUAL */
 
-/* FILME ANTIGO */
-.filme {
-    width: 90%;
-    margin: 0 auto;
-}
-
-.filme h2 {
-    text-align: left;
-}
-
-.conteudo {
+.filme-catalogo {
+    flex: 0 0 180px;
+    min-width: 0;
     display: flex;
-    align-items: flex-start;
-    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    scroll-snap-align: start;
 }
 
-.conteudo > img {
-    width: 250px;
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
+.filme-catalogo img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #e5e0e0;
 }
 
-.sinopse {
-    flex: 1;
-    min-width: 0;
+.filme-catalogo h3 {
+    width: 100%;
     font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    text-align: center;
+    line-height: 1.4;
 }
 
-.sinopse p {
-    margin-bottom: 15px;
-    line-height: 1.5;
+.poster-indisponivel {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: #ded6d6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
 }
 
-.plataforma {
-    margin-top: 15px;
+/* SETAS DO CARROSSEL */
+
+.seta-carrossel {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 55px;
+    padding: 0;
+    font-size: 22px;
+    border-radius: 8px;
 }
 
-.plataforma img {
+/* JANELA DE DETALHES */
+
+.modal-detalhes {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.modal-detalhes.ativo {
+    display: flex;
+}
+
+.modal-conteudo {
+    position: relative;
+    width: 100%;
+    max-width: 850px;
+    background: #1b1717;
+    color: white;
+    border-radius: 14px;
+    padding: 35px;
+    box-shadow: 0 5px 30px #00000080;
+}
+
+.fechar-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
     width: 40px;
     height: 40px;
+    padding: 0;
+    background: #a40000;
+    border-radius: 50%;
+    font-size: 28px;
+    line-height: 1;
+    z-index: 2;
+}
+
+.detalhes-corpo {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+#posterDetalhes {
+    width: 250px;
+    max-width: 40%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+#posterDetalhes[hidden] {
+    display: none;
+}
+
+.detalhes-informacoes {
+    flex: 1;
+    min-width: 0;
+}
+
+#tituloDetalhes {
+    font-family: 'Bungee', sans-serif;
+    font-size: 25px;
+    line-height: 1.4;
+    margin-bottom: 15px;
+    overflow-wrap: anywhere;
+}
+
+.detalhes-metadados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: #d5baba;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 25px;
+}
+
+.rotulo-detalhes {
+    color: #e34242;
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+#sinopseDetalhes,
+#generosDetalhes {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 25px;
 }
 
 /* CELULAR */
+
 @media (max-width: 600px) {
+
     header {
         min-height: 100svh;
         padding: 2rem 1rem;
@@ -258,6 +364,11 @@ button:disabled {
         gap: 2rem;
     }
 
+    .pesquisa,
+    .catalogo {
+        padding: 18px;
+    }
+
     .barra-pesquisa {
         flex-direction: column;
     }
@@ -266,51 +377,81 @@ button:disabled {
         width: 100%;
     }
 
-    #loginForm {
-        flex-direction: column;
-    }
-
-    #loginForm input,
-    #loginForm button {
-        width: 100%;
-    }
-
-    .resultado-filme,
-    .filme-catalogo {
+    .resultado-filme {
         flex-direction: column;
         align-items: center;
     }
 
-    .resultado-filme img,
-    .filme-catalogo img {
+    .resultado-filme img {
         width: 180px;
     }
 
-    .resultado-filme > div,
-    .informacoes-filme {
+    .resultado-filme > div {
         width: 100%;
     }
 
-    .filme {
-        width: 100%;
+    /* CARROSSEL NO CELULAR */
+
+    .carrossel-container {
+        gap: 0;
     }
 
-    .filme h2 {
-        text-align: center;
-        font-size: 20px;
+    #listaFilmes {
+        gap: 12px;
+        padding: 10px 5px 18px;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .conteudo {
+    .filme-catalogo {
+        flex: 0 0 135px;
+    }
+
+    .filme-catalogo h3 {
+        font-size: 13px;
+    }
+
+    .seta-carrossel {
+        display: none;
+    }
+
+    /* DETALHES NO CELULAR */
+
+    .modal-detalhes {
+        padding: 12px;
+    }
+
+    .modal-conteudo {
+        padding: 45px 20px 25px;
+    }
+
+    .detalhes-corpo {
         flex-direction: column;
         align-items: center;
+        gap: 20px;
     }
 
-    .conteudo > img {
-        width: 100%;
-        max-width: 250px;
+    #posterDetalhes {
+        width: 180px;
+        max-width: 100%;
     }
 
-    .sinopse {
+    .detalhes-informacoes {
         width: 100%;
     }
+
+    #tituloDetalhes {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .detalhes-metadados {
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    #sinopseDetalhes,
+    #generosDetalhes {
+        font-size: 15px;
+    }
+
 }

@@ -673,21 +673,19 @@
         });
 
        
-// ABRIR JANELA DE AVALIAÇÃO
+// ABRIR JANELA DE AVALIAÇÃO PELO BOTÃO DOS DETALHES
 
-listaFilmes.addEventListener("click", evento => {
+const marcarAssistidoDetalhes = document.getElementById("marcarAssistidoDetalhes");
 
-    const botao = evento.target.closest(".marcarAssistidoBtn");
-
-    if (!botao) return;
+marcarAssistidoDetalhes.addEventListener("click", evento => {
 
     evento.stopPropagation();
 
-    filmeAvaliacaoId = botao.dataset.id;
+    filmeAvaliacaoId = marcarAssistidoDetalhes.dataset.id;
     notaSelecionada = 0;
 
-    selecaoEstrelas.querySelectorAll("button").forEach(estrelа => {
-        estrelа.classList.remove("selecionada");
+    selecaoEstrelas.querySelectorAll("button").forEach(estrela => {
+        estrela.classList.remove("selecionada");
     });
 
     mensagemAvaliacao.textContent = "Escolham de 1 a 5 estrelas.";
@@ -695,8 +693,6 @@ listaFilmes.addEventListener("click", evento => {
 
     modalAvaliacao.classList.add("ativo");
     modalAvaliacao.setAttribute("aria-hidden", "false");
-
-    document.body.style.overflow = "hidden";
 
 });
 
@@ -751,7 +747,8 @@ confirmarAvaliacao.addEventListener("click", async () => {
 
         if (error) throw error;
 
-        fecharJanelaAvaliacao();
+       fecharJanelaAvaliacao();
+        fecharDetalhes();
 
         await carregarFilmes();
 

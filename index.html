@@ -11,7 +11,7 @@
 </head>
 
 <body>
-
+    <div id="notificacao" class="notificacao" role="status" aria-live="polite"></div>
     <header>
         
         <!-- MENU HAMBURGUER -->
@@ -244,6 +244,28 @@
         const sinopseDetalhes = document.getElementById("sinopseDetalhes");
         const generosDetalhes = document.getElementById("generosDetalhes");
 
+        // NOTIFICAÇÃO FLUTUANTE
+
+        const notificacao = document.getElementById("notificacao");
+        let temporizadorNotificacao;
+        
+        function mostrarNotificacao(texto, tipo = "sucesso") {
+        
+            clearTimeout(temporizadorNotificacao);
+        
+            notificacao.textContent = texto;
+            notificacao.className = `notificacao ${tipo}`;
+        
+            // Pequeno atraso para ativar a animação
+            requestAnimationFrame(() => {
+                notificacao.classList.add("ativa");
+            });
+        
+            temporizadorNotificacao = setTimeout(() => {
+                notificacao.classList.remove("ativa");
+            }, 3500);
+        }
+
         // PROTEGER TEXTOS EXIBIDOS NA PÁGINA
 
         function escapar(texto) {
@@ -438,8 +460,10 @@
 
                     if (error.code === "23505") {
 
-                        mensagemBusca.textContent =
-                            "Esse filme já está no nosso catálogo! ❤️";
+                        mostrarNotificacao(
+                            "Esse filme já está no nosso catálogo! ❤️",
+                            "aviso"
+                        );
 
                     } else {
 
@@ -449,8 +473,10 @@
 
                 } else {
 
-                    mensagemBusca.textContent =
-                        "Filme adicionado com sucesso! ❤️";
+                    mostrarNotificacao(
+                        "Filme adicionado ao MOZINHOFLIX! ❤️",
+                        "sucesso"
+                    );
 
                     await carregarFilmes();
 
@@ -460,8 +486,10 @@
 
                 console.error(erro);
 
-                mensagemBusca.textContent =
-                    "Não foi possível adicionar o filme.";
+                mostrarNotificacao(
+                    "Não foi possível adicionar o filme.",
+                    "erro"
+                );
 
             } finally {
 

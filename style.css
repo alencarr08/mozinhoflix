@@ -687,3 +687,43 @@ input {
     text-shadow: none;
     margin-left: 8px;
 }
+
+/* NOTIFICAÇÃO FLUTUANTE */
+.notificacao {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translate(-50%, -20px);
+    width: max-content;
+    max-width: calc(100% - 30px);
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #202020;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+    z-index: 99999;
+}
+
+.notificacao.ativa {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.notificacao.sucesso {
+    border-left: 4px solid #35c76f;
+}
+
+.notificacao.aviso {
+    border-left: 4px solid #f5b942;
+}
+
+.notificacao.erro {
+    border-left: 4px solid #e34b4b;
+}
